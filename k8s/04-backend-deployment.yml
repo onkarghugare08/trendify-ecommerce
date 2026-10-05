@@ -27,26 +27,26 @@ spec:
                 name: ecommerce-configmap
                 key: PORT
 
-          - name: MONGO_ROOT_PASSWORD
+          - name: MONGO_INITDB_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: ecommerce-secrets
-                key: MONGO_ROOT_PASSWORD
+                key: MONGO_INITDB_ROOT_PASSWORD
 
-          - name: MONGO_ROOT_USERNAME
+          - name: MONGO_INITDB_ROOT_USERNAME
             valueFrom:
               configMapKeyRef:
                 name: ecommerce-configmap
-                key:  MONGO_ROOT_USERNAME
+                key:  MONGO_INITDB_ROOT_USERNAME
 
-          - name: MONGO_ROOT_DB
+          - name: MONGO_INITDB_DATABASE
             valueFrom:
               configMapKeyRef:
                 name: ecommerce-configmap
-                key: MONGO_ROOT_DB
+                key: MONGO_INITDB_DATABASE
 
           - name: MONGO_URL
-            value: mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@mongodb:27017/$(MONGO_ROOT_DB)?authSource=admin
+            value: mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@mongodb:27017/$(MONGO_INITDB_DATABASE)?authSource=admin
         resources:
           requests: # minimum resource requirement
             cpu: 10m # 0.01 Cores of CPU

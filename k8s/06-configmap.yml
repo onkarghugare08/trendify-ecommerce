@@ -1,10 +1,9 @@
-kind: ConfigMap
 apiVersion: v1
+kind: ConfigMap
 metadata:
   name: ecommerce-configmap
   namespace: mernstack
-
 data:
-  MONGO_ROOT_USERNAME: merndb # plain text , no need to base64 encode
-  MONGO_ROOT_DB: mernapp
+  MONGO_INITDB_ROOT_USERNAME: merndb 
+  MONGO_INITDB_DATABASE: mernapp
   PORT: "5000"
