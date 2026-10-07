@@ -1,332 +1,111 @@
-import { Link } from "react-router-dom";
-import { useGlobalContext } from "../../GlobalContext";
+import { useEffect, useMemo, useState } from "react";
+import { useGlobalContext, Products } from "../../GlobalContext";
+import { useSearchParams } from "react-router-dom";
 import Container from "../Container";
 import Title from "../components/Title";
-import { Products } from "../../GlobalContext";
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Button from "../components/Button";
-import Input from "../components/Input";
+import ProductCard from "../components/ProductCard";
 import LoadingSpinner from "../components/LoadingSpinner";
-type Category =
-  | "Men"
-  | "Women"
-  | "Kids"
-  | "Topwear"
-  | "Bottomwear"
-  | "Winterwear";
+
+const categories = ["Men", "Women", "Kids"] as const;
+const types = ["Topwear", "Bottomwear", "Winterwear"] as const;
+type Filter = (typeof categories)[number] | (typeof types)[number];
 
 const CollectionsPage = () => {
-  const [products, setProducts] = useState<Products[]>([]);
+  const { products, loading, isSearchBarOpen, setIsSearchBarOpen } = useGlobalContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState("");
+  const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
+  const [sort, setSort] = useState("featured");
 
-  const { isSearchBarOpen, setIsSearchBarOpen, loading } = useGlobalContext();
-  const [checkedBox, setCheckedBox] = useState<Record<Category, boolean>>({
-    Men: false,
-    Women: false,
-    Kids: false,
-    Topwear: false,
-    Bottomwear: false,
-    Winterwear: false,
-  });
-
-  const [searchInput, setSearchInput] = useState("");
   useEffect(() => {
-    axios
-      .get("https://mern-ecommerce-ngdf.onrender.com/products")
-      .then((res) => {
-        setProducts(res.data);
-      })
+    const query = searchParams.get("search") || "";
+    setSearch(query);
+  }, [searchParams]);
 
-      .catch((err) => console.error(err));
-  }, []);
-
-  const toggleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setCheckedBox((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
+  const toggleFilter = (filter: Filter) => {
+    setActiveFilters((current) => current.includes(filter) ? current.filter((item) => item !== filter) : [...current, filter]);
   };
 
-  const sortChangeUpdate = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as
-      | "name-asc"
-      | "name-desc"
-      | "price-asc"
-      | "price-desc"
-      | "createdAt-asc";
-    let sortedProducts;
-    if (value === "price-asc") {
-      sortedProducts = products?.toSorted((a, b) => a.price - b.price);
-    } else if (value === "price-desc") {
-      sortedProducts = products?.toSorted((a, b) => b.price - a.price);
-    } else if (value === "name-asc") {
-      sortedProducts = products?.toSorted((a, b) =>
-        a.name.localeCompare(b.name)
-      );
-    } else if (value === "name-desc") {
-      sortedProducts = products?.toSorted((a, b) =>
-        b.name.localeCompare(a.name)
-      );
-    } else if (value === "createdAt-asc") {
-      sortedProducts = products?.toSorted(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-    }
-    sortedProducts ? setProducts(sortedProducts) : [];
+  const filteredProducts = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    let next = products.filter((product) => {
+      const matchesSearch = !query || [product.name, product.category, product.subCategory].some((value) => value.toLowerCase().includes(query));
+      const matchesFilters = !activeFilters.length || activeFilters.some((filter) => product.category === filter || product.subCategory === filter);
+      return matchesSearch && matchesFilters;
+    });
+
+    next = [...next];
+    if (sort === "price-asc") next.sort((a, b) => a.price - b.price);
+    if (sort === "price-desc") next.sort((a, b) => b.price - a.price);
+    if (sort === "name") next.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "newest") next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return next;
+  }, [products, search, activeFilters, sort]);
+
+  const clearFilters = () => {
+    setActiveFilters([]);
+    setSearch("");
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete("search");
+      return next;
+    });
   };
-  //Method 1
-  // const filteredProducts = products.filter((product) => {
-  //   const productMatchesSearch =
-  //     product.category.toLowerCase().includes(searchInput.toLowerCase()) ||
-  //     product.name.toLowerCase().includes(searchInput.toLowerCase()) ||
-  //     product.subCategory.toLowerCase().includes(searchInput.toLowerCase());
-  //   if (searchInput && !productMatchesSearch) {
-  //     return false;
-  //   }
-  //   const productIsMenCategory = product.category === "Men";
-  //   const productIsWomenCategory = product.category === "Women";
-  //   const productIsKidsCategory = product.category === "Kids";
-  //   const productIsTopwearSubCategory = product.subCategory === "Topwear";
-  //   const productIsBottomwearSubCategory = product.subCategory === "Bottomwear";
-  //   const productIsWinterwearSubCategory = product.subCategory === "Winterwear";
 
-  //   if (checkedBox.Men && productIsMenCategory) {
-  //     return true;
-  //   }
-  //   if (checkedBox.Women && productIsWomenCategory) {
-  //     return true;
-  //   }
-  //   if (checkedBox.Kids && productIsKidsCategory) {
-  //     return true;
-  //   }
-  //   if (checkedBox.Topwear && productIsTopwearSubCategory) {
-  //     return true;
-  //   }
-  //   if (checkedBox.Bottomwear && productIsBottomwearSubCategory) {
-  //     return true;
-  //   }
-  //   if (checkedBox.Winterwear && productIsWinterwearSubCategory) {
-  //     return true;
-  //   }
-  //   if (
-  //     checkedBox.Men ||
-  //     checkedBox.Women ||
-  //     checkedBox.Kids ||
-  //     checkedBox.Topwear ||
-  //     checkedBox.Bottomwear ||
-  //     checkedBox.Winterwear
-  //   ) {
-  //     return false;
-  //   }
-  //   return true;
-  // });
+  const renderFilter = (filter: Filter) => (
+    <button key={filter} type="button" onClick={() => toggleFilter(filter)} className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${activeFilters.includes(filter) ? "border-stone-950 bg-stone-950 text-white" : "border-stone-200 bg-white text-stone-600 hover:border-stone-400"}`}>
+      {filter}
+    </button>
+  );
 
-  //Method2
-  // const filteredProducts = products.filter((product) => {
-  //   const isProductSearchMatch =
-  //     product.name.toLowerCase().startsWith(searchInput.toLowerCase()) ||
-  //     product.category.toLowerCase().startsWith(searchInput.toLowerCase()) ||
-  //     product.subCategory.toLowerCase().startsWith(searchInput.toLowerCase());
-  //   if (searchInput && !isProductSearchMatch) {
-  //     return false;
-  //   }
-  //   if (
-  //     (checkedBox.Men && product.category === "Men") ||
-  //     (checkedBox.Women && product.category === "Women") ||
-  //     (checkedBox.Kids && product.category === "Kids") ||
-  //     (checkedBox.Topwear && product.subCategory === "Topwear") ||
-  //     (checkedBox.Bottomwear && product.subCategory === "Bottomwear") ||
-  //     (checkedBox.Winterwear && product.subCategory === "Winterwear")
-  //   ) {
-  //     return true;
-  //   }
-  //   if (
-  //     !checkedBox.Men &&
-  //     !checkedBox.Women &&
-  //     !checkedBox.Kids &&
-  //     !checkedBox.Topwear &&
-  //     !checkedBox.Bottomwear &&
-  //     !checkedBox.Winterwear
-  //   )
-  //     return true;
-  // });
-
-  //Method3
-  const filteredProducts = products.filter((product) => {
-    const isProductSearchMatch =
-      product.name.toLowerCase().startsWith(searchInput.toLowerCase()) ||
-      product.category.toLowerCase().startsWith(searchInput.toLowerCase()) ||
-      product.subCategory.toLowerCase().startsWith(searchInput.toLowerCase());
-
-    if (searchInput && !isProductSearchMatch) return false;
-
-    const isAnyCategoryChecked =
-      checkedBox.Men ||
-      checkedBox.Women ||
-      checkedBox.Kids ||
-      checkedBox.Topwear ||
-      checkedBox.Bottomwear ||
-      checkedBox.Winterwear;
-
-    if (!isAnyCategoryChecked) return true;
-
-    return (
-      checkedBox[product.category as Category] ||
-      checkedBox[product.subCategory as Category]
-    );
-  });
-  const checkboxItems: Category[] = [
-    "Men",
-    "Women",
-    "Kids",
-    "Topwear",
-    "Bottomwear",
-    "Winterwear",
-  ];
   return (
-    <Container>
-      {isSearchBarOpen && (
-        <div className="flex items-center justify-center border-t-[0.063rem] border-gray-200 border-b-gray-200 bg-gray-50">
-          <div className="w-3/4  flex items-center justify-between px-5 py-2 mx-3 my-5 sm:w-1/2 border border-gray-400 rounded-full">
-            <Input
-              htmlType="text"
-              size="large"
-              value={searchInput}
-              inputClassName="text-sm bg-inherit border-0 outline-none text0gray-200 z-50"
-              placeholder="Search..."
-              onChange={(e) => setSearchInput(e.target.value)}
-              required
-            />
+    <main className="pb-12">
+      <Container>
+        <section className="border-b border-stone-200 py-12">
+          <Title text1="The" text2="collection" />
+          <div className="mt-4 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+            <div>
+              <h1 className="prata-regular text-4xl tracking-[-0.025em] sm:text-5xl">Find your next favorite.</h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-stone-500">Search the full Trendify edit or filter by category. Everything stays one click away.</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">{filteredProducts.length} pieces</div>
+          </div>
+        </section>
 
-            <img src="/images/search.png" className="w-4" alt="search icon" />
-          </div>
-          <img
-            src="/images/search-close.png"
-            className="w-3 cursor-pointer"
-            alt="search-close"
-            onClick={() => setIsSearchBarOpen(false)}
-          />
-        </div>
-      )}
-      <div className="flex flex-col pt-10 border-t-[0.063rem] border-gray-200 gap-1 sm:gap-10 sm:flex-row">
-        <div className="min-w-60">
-          <div>
-            <p className="flex gap-2 items-center text-xl my-2 cursor-pointer">
-              FILTERS
-              <img
-                src="/images/back-arrow.png"
-                className="h-3 sm:hidden"
-                alt="back-arrow"
-              />
-            </p>
-          </div>
-          <div className="hidden sm:block border pl-5 py-3 mt-6 border-gray-300">
-            <p className="font-medium mb-3 text-sm">CATEGORIES</p>
-            <div className="flex flex-col gap-2 text-gray-700 text-sm font-light">
-              {checkboxItems.slice(0, 3).map((checkboxItem) => (
-                <Input
-                  key={checkboxItem}
-                  htmlType="checkbox"
-                  name={checkboxItem}
-                  size="tiny"
-                  onChange={toggleCheckbox}
-                  checked={checkedBox[checkboxItem]}
-                  label={checkboxItem}
-                />
-              ))}
+        <div className="sticky top-[76px] z-30 mt-6 rounded-[1.5rem] border border-stone-200 bg-[#f8f7f4]/95 p-4 backdrop-blur md:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+            <div className="flex flex-1 items-center gap-3 rounded-full border border-stone-200 bg-white px-4 py-2.5">
+              <span className="text-stone-400">⌕</span>
+              <input value={search} onChange={(e) => { setSearch(e.target.value); setSearchParams((current) => { const next = new URLSearchParams(current); if (e.target.value) next.set("search", e.target.value); else next.delete("search"); return next; }); }} placeholder="Search products, categories or styles" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-stone-400" />
+              {search && <button type="button" onClick={() => setSearch("")} className="text-xs font-semibold uppercase tracking-[0.1em] text-stone-400 hover:text-stone-900">Clear</button>}
             </div>
-          </div>
-          <div className="hidden sm:block gap-2 border pl-5 py-3 my-5 mt-6 border-gray-300 text-sm">
-            <p className="font-medium mb-3 text-sm">TYPES</p>
-            <div className="flex flex-col gap-2 text-gray-700 text-sm font-light">
-              {checkboxItems.slice(3).map((checkboxItem) => (
-                <Input
-                  key={checkboxItem}
-                  htmlType="checkbox"
-                  name={checkboxItem}
-                  size="tiny"
-                  onChange={toggleCheckbox}
-                  checked={checkedBox[checkboxItem]}
-                  label={checkboxItem}
-                />
-              ))}
-            </div>
-          </div>
-          <Button
-            onClick={() => {
-              setCheckedBox({
-                Men: false,
-                Women: false,
-                Kids: false,
-                Topwear: false,
-                Bottomwear: false,
-                Winterwear: false,
-              });
-            }}
-            type="primary"
-            size="small"
-            className="hidden sm:block mt-1 rounded px-4"
-          >
-            Clear Filters
-          </Button>
-        </div>
-        <div>
-          <div className="flex justify-between text-base mb-2 sm:text-2xl">
-            <div className="flex items-center mb-3 gap-2">
-              <Title text1="All" text2="Collections" />
-            </div>
-            <select
-              onChange={sortChangeUpdate}
-              className="border-2 text-sm h-9 px-2 cursor-pointer border-gray-300"
-            >
-              <option value="name-asc" className="cursor-pointer">
-                Sort by: Name-Asc
-              </option>
-              <option value="name-desc" className="cursor-pointer">
-                Sort by: Name-Desc
-              </option>
-              <option value="price-asc" className="cursor-pointer">
-                Sort by: Low to High
-              </option>
-              <option value="price-desc" className="cursor-pointer">
-                Sort by: High to Low
-              </option>
-              <option value="createdAt-asc" className="cursor-pointer">
-                Sort by: CreatedAt-Asc
-              </option>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-full border border-stone-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.1em] outline-none">
+              <option value="featured">Sort: Featured</option>
+              <option value="newest">Sort: Newest</option>
+              <option value="price-asc">Price: Low to high</option>
+              <option value="price-desc">Price: High to low</option>
+              <option value="name">Name</option>
             </select>
           </div>
-
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <div className="grid grid-cols-2 gap-4 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
-              {filteredProducts.map((product) => {
-                return (
-                  <Link to={`/product/${product._id}`} key={product._id}>
-                    <div className="flex flex-col cursor-pointer overflow-hidden">
-                      <img
-                        src={product.images[0]}
-                        className="tranition ease-in-out hover:scale-110"
-                        alt="product"
-                      />
-                      <p className="text-sm pt-3 pb-1 text-[#374151]">
-                        {product.name}
-                      </p>
-                      <p className="text-sm font-medium text-[#374151]">
-                        ${product.price.toFixed(2)}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400">Category</span>
+            {categories.map(renderFilter)}
+            <span className="mx-1 hidden h-5 w-px bg-stone-200 sm:block" />
+            <span className="mr-1 text-[10px] font-bold uppercase tracking-[0.15em] text-stone-400">Type</span>
+            {types.map(renderFilter)}
+            {(activeFilters.length > 0 || search) && <button type="button" onClick={clearFilters} className="ml-auto px-3 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 underline underline-offset-4">Reset</button>}
+          </div>
         </div>
-      </div>
-    </Container>
+
+        {isSearchBarOpen && (
+          <button type="button" className="mt-3 text-xs font-bold uppercase tracking-[0.15em] text-stone-500" onClick={() => setIsSearchBarOpen(false)}>Close global search</button>
+        )}
+
+        <section className="mt-10">
+          {loading ? <LoadingSpinner /> : filteredProducts.length ? <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">{filteredProducts.map((product: Products) => <ProductCard key={product._id} product={product} />)}</div> : <div className="rounded-[1.5rem] border border-dashed border-stone-300 bg-white p-16 text-center"><p className="prata-regular text-2xl">Nothing matched that search.</p><p className="mt-2 text-sm text-stone-500">Try a broader term or reset the filters.</p><button type="button" onClick={clearFilters} className="mt-6 rounded-full bg-stone-950 px-5 py-3 text-xs font-bold uppercase tracking-[0.1em] text-white">Reset filters</button></div>}
+        </section>
+      </Container>
+    </main>
   );
 };
 

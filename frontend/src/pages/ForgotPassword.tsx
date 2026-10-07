@@ -1,67 +1,22 @@
-import Container from "../Container";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { AxiosError } from "axios";
 import { toast } from "react-toastify";
-import API from "../utils/Api";
+import Container from "../Container";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { AxiosError } from "axios";
+import API from "../utils/Api";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const submitForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const res = await API.post("/api/users/forgot-password", { email });
-      setMessage(res.data.message);
-      toast.success("Reset link has been sent to your email");
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        setMessage(error.response?.data?.message || "Something went wrong");
-      } else {
-        setMessage("Something went wrong");
-      }
-      toast.error("Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
+    e.preventDefault(); setIsLoading(true);
+    try { const res = await API.post("/api/users/forgot-password", { email }); setMessage(res.data.message); toast.success("Reset instructions sent."); }
+    catch (error) { const text = error instanceof AxiosError ? error.response?.data?.message || "Something went wrong" : "Something went wrong"; setMessage(text); toast.error(text); }
+    finally { setIsLoading(false); }
   };
-
-  return (
-    <Container>
-      <div className="py-17">
-        <form
-          onSubmit={submitForm}
-          className="flex flex-col rounded-lg py-7.5 px-4 mb-12 gap-4 max-w-[39rem] mx-auto border"
-        >
-          <h1 className="text-4xl font-medium text-center mb-6">
-            Recover Password
-          </h1>
-          <label className="text-center font-bold" htmlFor="">
-            Email address
-          </label>
-          <Input
-            htmlType="email"
-            placeholder="Enter email"
-            size="large"
-            onChange={(e) => setEmail(e.target.value)}
-            inputClassName="py-2 px-4 placeholder:text-amber-300"
-            required
-          />
-          <Button loading={isLoading} buttonType="submit" size="large">
-            {isLoading ? "Sending..." : "SEND"}
-          </Button>
-        </form>
-        {message && (
-          <p className="mt-4 text-center text-sm text-gray-700">{message}</p>
-        )}
-      </div>
-    </Container>
-  );
+  return <main className="py-20"><Container><div className="mx-auto max-w-xl rounded-[2rem] border border-stone-200 bg-white p-7 shadow-xl sm:p-12"><p className="eyebrow">Account recovery</p><h1 className="prata-regular mt-3 text-4xl">Forgot your password?</h1><p className="mt-3 text-sm leading-6 text-stone-500">Enter the email attached to your account and we'll send the next step.</p><form onSubmit={submitForm} className="mt-8 space-y-4"><Input htmlType="email" size="large" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} required /><Button loading={isLoading} buttonType="submit" size="large" className="w-full">{isLoading ? "Sending" : "Send reset link"}</Button></form>{message && <p className="mt-5 rounded-2xl bg-stone-50 p-4 text-sm text-stone-600">{message}</p>}<Link to="/signup" className="mt-6 inline-block text-xs font-semibold uppercase tracking-[0.12em] text-stone-500 underline underline-offset-4">Back to sign in</Link></div></Container></main>;
 };
-
 export default ForgotPassword;

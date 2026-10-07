@@ -7,31 +7,15 @@ interface SpinnerProps {
   className?: string;
 }
 
-const LoadingSpinner = ({
-  text = "Fetching products",
-  size = "medium",
-  className = "",
-}: SpinnerProps) => {
+const LoadingSpinner = ({ text = "Loading products", size = "medium", className = "" }: SpinnerProps) => {
   const { loading } = useGlobalContext();
-  const sizeClasses = {
-    small: "w-6 brightness-35 invert-100",
-    medium: "w-10 brightness-35 invert-100",
-  };
+  if (!loading) return null;
 
+  const sizeClasses = { small: "h-5 w-5", medium: "h-8 w-8" };
   return (
-    <div>
-      {loading && (
-        <div className="flex items-center justify-center">
-          <span className="mr-2 text-gray-700 text-xl">{text}</span>
-          <img
-            src="/images/loading-icon.svg"
-            
-            className={cn(sizeClasses[size], className)}
-
-            alt="loading-icon"
-          />
-        </div>
-      )}
+    <div className={cn("flex min-h-40 flex-col items-center justify-center gap-3 text-center", className)}>
+      <span className={cn("animate-spin rounded-full border-2 border-stone-300 border-t-stone-950", sizeClasses[size])} aria-label="Loading" />
+      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">{text}</span>
     </div>
   );
 };

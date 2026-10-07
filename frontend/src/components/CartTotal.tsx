@@ -1,39 +1,26 @@
 import { Link } from "react-router-dom";
 import { shippingFee } from "./constants";
-import Title from "./Title";
 import { useGlobalContext } from "../../GlobalContext";
 import Button from "./Button";
 
 const CartTotal = () => {
-  const { subTotal } = useGlobalContext()
-  
+  const { subTotal, cartItems } = useGlobalContext();
+  const total = subTotal ? subTotal + shippingFee : 0;
+
   return (
-    <div className="my-20 flex justify-end">
-      <div className="w-full sm:w-[450px]">
-        <div className="text-2xl">
-          <Title text1="CART" text2="TOTAL" />
-        </div>
-        <div className="flex flex-col gap-2 text-sm mt-2">
-          <div className="flex justify-between text-lg font-medium">
-            <p>Sub Total</p>
-            <p>${subTotal.toFixed(2)}</p>
-          </div>
-          <hr className="border-gray-200" />
-          <div className="flex justify-between text-lg font-medium">
-            <p>Shipping Fee</p>
-            <p>$ {shippingFee.toFixed(2)}</p>
-          </div>
-          <hr className="border-gray-200" />
-          <div className="flex justify-between text-2xl font-semibold">
-            <p>Total Amount</p>
-            <p>${subTotal ? (subTotal + shippingFee) .toFixed(2) : 0}</p>
-          </div>
-          <Link to="/checkout" className="w-full text-end">
-            <Button type="primary" size="large" className="py-3 rounded-none px-8 text-sm my-8">PROCEED TO CHECKOUT</Button>
-          </Link>
-        </div>
+    <aside className="soft-card w-full rounded-[1.5rem] p-6 sm:p-8 lg:max-w-[440px]">
+      <p className="eyebrow">Order summary</p>
+      <h2 className="prata-regular mt-2 text-2xl">Cart total</h2>
+      <div className="mt-6 space-y-4 text-sm">
+        <div className="flex justify-between text-stone-500"><span>Subtotal</span><span className="font-semibold text-stone-900">${subTotal.toFixed(2)}</span></div>
+        <div className="flex justify-between text-stone-500"><span>Shipping</span><span className="font-semibold text-stone-900">${shippingFee.toFixed(2)}</span></div>
+        <div className="border-t border-stone-200 pt-4"><div className="flex justify-between text-base font-semibold"><span>Total</span><span>${total.toFixed(2)}</span></div></div>
       </div>
-    </div>
+      <Link to={cartItems.length ? "/checkout" : "/collection"} className="mt-6 block">
+        <Button size="large" className="w-full">{cartItems.length ? "Proceed to checkout" : "Continue shopping"}</Button>
+      </Link>
+      <p className="mt-4 text-center text-xs leading-5 text-stone-400">Taxes are calculated at checkout. Free shipping on qualifying orders.</p>
+    </aside>
   );
 };
 

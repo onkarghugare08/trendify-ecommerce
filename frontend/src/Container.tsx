@@ -1,18 +1,12 @@
 import { type ReactNode } from "react";
-import { useGlobalContext } from "../GlobalContext";
-interface Container {
+
+interface ContainerProps {
   children: ReactNode;
   className?: string;
 }
 
- const Container = ({ children, className = "" }: Container) => {
-
-  const { isUserDetailOpen, setIsUserDetailOpen } = useGlobalContext()
-  return (
-    <div onClick={() => setIsUserDetailOpen(!isUserDetailOpen)} className={`px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] ${className}`}>
-      {children}
-    </div>
-  );
+const Container = ({ children, className = "" }: ContainerProps) => {
+  return <div className={`container-shell ${className}`}>{children}</div>;
 };
 
 export default Container;

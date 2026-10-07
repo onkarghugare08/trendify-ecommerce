@@ -1,18 +1,10 @@
-import { useGlobalContext } from "../../GlobalContext";
-import { shippingFee } from "../components/constants";
-import Title from "../components/Title";
-import Container from "../Container";
-import PaymentMethods from "../components/PaymentMethods";
-import Input from "../components/Input";
 import { useState } from "react";
-import { cn } from "@sglara/cn";
+import Container from "../Container";
+import Input from "../components/Input";
+import PaymentMethods from "../components/PaymentMethods";
+import { shippingFee } from "../components/constants";
+import { useGlobalContext } from "../../GlobalContext";
 
-interface DeliveryField {
-  placeholder: string;
-  fieldName: keyof DeliveryData;
-  isFullWidth: boolean;
-  isRequired?: boolean;
-}
 interface DeliveryData {
   firstName: string;
   lastName: string;
@@ -24,139 +16,51 @@ interface DeliveryData {
   country: string;
   mobile: string;
 }
-const deliveryFields: DeliveryField[] = [
-  {
-    placeholder: "First Name",
-    fieldName: "firstName",
-    isFullWidth: false,
-    isRequired: true,
-  },
-  {
-    placeholder: "Last Name",
-    fieldName: "lastName",
-    isFullWidth: false,
-  },
-  {
-    placeholder: "Email Address",
-    fieldName: "emailAddress",
-    isFullWidth: true,
-  },
-  {
-    placeholder: "Street",
-    fieldName: "street",
-    isFullWidth: true,
-  },
-  {
-    placeholder: "City",
-    fieldName: "city",
-    isFullWidth: false,
-  },
-  {
-    placeholder: "State",
-    fieldName: "state",
-    isFullWidth: false,
-  },
-  {
-    placeholder: "Zip Code",
-    fieldName: "zipCode",
-    isFullWidth: false,
-  },
-  {
-    placeholder: "Country",
-    fieldName: "country",
-    isFullWidth: false,
-  },
-  {
-    placeholder: "Mobile",
-    fieldName: "mobile",
-    isFullWidth: true,
-  },
-];
+
+const fields: Array<keyof DeliveryData> = ["firstName", "lastName", "emailAddress", "street", "city", "state", "zipCode", "country", "mobile"];
+const labels: Record<keyof DeliveryData, string> = {
+  firstName: "First name",
+  lastName: "Last name",
+  emailAddress: "Email address",
+  street: "Street address",
+  city: "City",
+  state: "State",
+  zipCode: "ZIP code",
+  country: "Country",
+  mobile: "Mobile number",
+};
 
 const Checkout = () => {
-  const { subTotal } = useGlobalContext();
+  const { subTotal, cartItems } = useGlobalContext();
+  const [formData, setFormData] = useState<DeliveryData>({ firstName: "", lastName: "", emailAddress: "", street: "", city: "", state: "", zipCode: "", country: "", mobile: "" });
 
-  const [formData, setFormData] = useState<DeliveryData>({
-    firstName: "",
-    lastName: "",
-    emailAddress: "",
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "",
-    mobile: "",
-  });
+  const setField = (field: keyof DeliveryData, value: string) => setFormData((current) => ({ ...current, [field]: value }));
+  const total = subTotal + shippingFee;
 
   return (
-    <Container>
-      <div
-        className="border-t border-gray-200 
-      flex flex-col justify-between sm:flex-row min-h-[80vh] pt-5 sm:pt-14 gap-4"
-      >
-        <div className="flex flex-col gap-4 w-full sm:max-w-[480px]">
-          <div className="my-3 text-xl sm:text-2xl">
-            <Title text1="DELIVERY" text2="INFORMATION" />
-          </div>
-          <div className="flex gap-3 w-full flex-wrap">
-            {deliveryFields.map((deliveryField) => (
-              <Input
-                key={deliveryField.fieldName}
-                value={formData[deliveryField.fieldName]}
-                size="medium"
-                htmlType="text"
-                required={deliveryField.isRequired}
-                inputClassName="w-full px-4 border-gray-300 rounded mb-1"
-                wrapperClassName={cn({
-                  "w-full": deliveryField.isFullWidth,
-                  "w-[calc(50%-0.375rem)]": !deliveryField.isFullWidth,
-                })}
-                placeholder={deliveryField.placeholder}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    [deliveryField.fieldName]: e.target.value,
-                  })
-                }
-              />
-            ))}
-          </div>
-        </div>
-        <div className="mt-8">
-          <div className="min-w-70 mt-8">
-            <div className="w-full">
-              <div className="text-2xl">
-                <Title text1="CART" text2="TOTAL" />
-              </div>
-              <div className="mt-2 flex flex-col text-sm gap-2">
-                <div className="flex justify-between text-lg font-medium">
-                  <p>Sub Total</p>
-                  <p>$ {subTotal.toFixed(2)}</p>
-                </div>
-                <hr className="border-gray-200" />
-                <div className="flex justify-between text-lg font-medium">
-                  <p>Shipping Fee</p>
-                  <p>$ {shippingFee.toFixed(2)}</p>
-                </div>
-                <hr className="border-gray-200" />
-                <div className="flex justify-between text-2xl font-semibold">
-                  <p>Total Amount</p>
-                  <p>$ {(subTotal + shippingFee).toFixed(2)}</p>
-                </div>
-              </div>
+    <main className="pb-12">
+      <Container>
+        <section className="border-b border-stone-200 py-10"><p className="eyebrow">Secure checkout</p><h1 className="prata-regular mt-3 text-4xl sm:text-5xl">Finish your order.</h1><p className="mt-3 text-sm text-stone-500">Your details stay focused here so checkout feels quick and calm.</p></section>
+        {cartItems.length === 0 ? <div className="py-24 text-center text-sm text-stone-500">Your cart is empty. Add a product before checking out.</div> : <form className="grid gap-10 py-10 lg:grid-cols-[1fr_420px]" onSubmit={(e) => e.preventDefault()}>
+          <section className="soft-card rounded-[2rem] p-6 sm:p-8">
+            <div className="flex items-end justify-between gap-4"><div><p className="eyebrow">Step 01</p><h2 className="prata-regular mt-2 text-2xl">Delivery information</h2></div><span className="text-xs text-stone-400">All fields secure</span></div>
+            <div className="mt-7 grid grid-cols-2 gap-4">
+              {fields.map((field) => <Input key={field} htmlType={field === "emailAddress" ? "email" : "text"} size="medium" required={field === "firstName" || field === "emailAddress" || field === "street"} placeholder={labels[field]} value={formData[field]} onChange={(e) => setField(field, e.target.value)} wrapperClassName={field === "emailAddress" || field === "street" || field === "mobile" ? "col-span-2" : ""} />)}
             </div>
-            <div className="mt-12">
-              <div>
-                {" "}
-                <Title text1="PAYMENT" text2="Methods" />
-              </div>
+            <div className="mt-8 rounded-2xl bg-stone-50 p-4 text-xs leading-5 text-stone-500">By continuing, you agree to Trendify's delivery and returns terms. Orders are created from the cart items shown here.</div>
+          </section>
 
-              <PaymentMethods />
+          <aside className="space-y-4">
+            <div className="soft-card rounded-[2rem] p-6 sm:p-7">
+              <p className="eyebrow">Step 02</p><h2 className="prata-regular mt-2 text-2xl">Your order</h2>
+              <div className="mt-6 space-y-4">{cartItems.map((item) => <div key={`${item._id}-${item.size}`} className="flex gap-3"><img src={item.images[0]} alt={item.name} className="h-16 w-14 rounded-xl object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{item.name}</p><p className="mt-1 text-xs text-stone-500">Size {item.size} · Qty {item.quantity}</p></div><p className="text-sm font-semibold">${(item.price * item.quantity).toFixed(2)}</p></div>)}</div>
+              <div className="mt-6 space-y-3 border-t border-stone-200 pt-5 text-sm"><div className="flex justify-between text-stone-500"><span>Subtotal</span><span>${subTotal.toFixed(2)}</span></div><div className="flex justify-between text-stone-500"><span>Shipping</span><span>${shippingFee.toFixed(2)}</span></div><div className="flex justify-between border-t border-stone-200 pt-3 font-semibold"><span>Total</span><span>${total.toFixed(2)}</span></div></div>
             </div>
-          </div>
-        </div>
-      </div>
-    </Container>
+            <div className="soft-card rounded-[2rem] p-6 sm:p-7"><PaymentMethods /></div>
+          </aside>
+        </form>}
+      </Container>
+    </main>
   );
 };
 

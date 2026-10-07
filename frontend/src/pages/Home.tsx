@@ -1,171 +1,110 @@
-"use client";
-import "../index.css";
-import Container from "../Container";
-import { Link } from "react-router-dom";
-import Title from "../components/Title";
-import { useGlobalContext } from "../../GlobalContext";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import Container from "../Container";
+import Title from "../components/Title";
+import ProductCard from "../components/ProductCard";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useGlobalContext } from "../../GlobalContext";
+import heroImg from "../assets/hero_img.png";
+import exchangeIcon from "../assets/exchange_icon.png";
+import qualityIcon from "../assets/quality_icon.png";
+import supportIcon from "../assets/support_img.png";
 
-export interface Products {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  category: string;
-  subCategory: string;
-  sizes: string[];
-  bestSeller: boolean;
-}
 const Home = () => {
   const { products, setIsUserDetailOpen, loading } = useGlobalContext();
+
   useEffect(() => {
     setIsUserDetailOpen(false);
-  }, []);
-  console.log(products)
-  return (
-    <Container>
-      <div className="flex flex-col sm:flex-row border border-gray-400">
-        <div className="py-10 sm:py-0 sm:w-1/2 flex flex-col items-center justify-center lg:text-5xl  w-full">
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="w-8 md:w-11 font-bold h-[0.125rem] bg-[#414141]"></p>
-              <p className="uppercase font-medium text-sm md:text-base text-[#414141]">
-                our best sellers
-              </p>
-            </div>
-            <h1 className="text-3xl leading-relaxed prata-regular text-[#414141] font-normal lg:text-5xl">
-              Latest Arrivals
-            </h1>
-            <div className="flex items-center gap-2">
-              <p className="uppercase font-semibold text-[#414141] text-sm md:text-base">
-                Shop now
-              </p>
-              <p className="w-8 md:w-11 font-bold h-[0.063rem] bg-[#414141]"></p>
-            </div>
-          </div>
-        </div>
-        <img src="/images/hero-img.png" className="sm:w-1/2" alt="hero-img" />
-      </div>
+  }, [setIsUserDetailOpen]);
 
-      {/* Second section */}
-      <div className="my-10">
-        <div className="py-8 flex flex-col justify-center items-center">
-          <div className="mb-3 flex items-center gap-1 uppercase">
-            <p className="text-gray-500 sm:text-[#6B7280] text-2xl sm:text-3xl">
-              Latest
-            </p>
-            <span className="flex items-center gap-1 text-gray-700 font-medium text-2xl sm:text-3xl">
-              Collections
-              <p className="w-8 sm:w-12 h-[0.063rem] sm:h-[0.125rem] bg-gray-700 sm:bg-[#374151]"></p>
-            </span>
+  const latest = products.slice(0, 8);
+  const bestSellers = products.filter((product) => product.bestSeller).slice(0, 8);
+
+  return (
+    <main>
+      <Container>
+        <section className="relative overflow-hidden rounded-[2rem] bg-[#e9ded2] reveal">
+          <div className="grid min-h-[560px] lg:grid-cols-2">
+            <div className="flex items-center p-8 sm:p-12 lg:p-16 xl:p-20">
+              <div className="max-w-xl">
+                <p className="eyebrow">New season · 2026</p>
+                <h1 className="prata-regular mt-5 text-5xl leading-[1.02] tracking-[-0.03em] text-stone-950 sm:text-6xl lg:text-7xl">Quiet luxury.<br />Everyday confidence.</h1>
+                <p className="mt-6 max-w-md text-sm leading-7 text-stone-600 sm:text-base">Discover refined essentials designed to fit effortlessly into the way you actually live.</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link to="/collection"><span className="inline-flex rounded-full bg-stone-950 px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-stone-800">Shop new arrivals</span></Link>
+                  <Link to="/collection" className="inline-flex items-center rounded-full border border-stone-400 bg-white/50 px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.08em] text-stone-900 hover:bg-white">Explore collection</Link>
+                </div>
+                <div className="mt-10 flex flex-wrap gap-6 text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">
+                  <span>Premium feel</span><span>Easy returns</span><span>Secure checkout</span>
+                </div>
+              </div>
+            </div>
+            <div className="min-h-[360px] overflow-hidden lg:min-h-0">
+              <img src={heroImg} alt="Trendify new season" className="h-full w-full object-cover object-center" />
+            </div>
           </div>
-          <div>
-            <p className="text-xs sm:text-sm md:text-base mx-9 sm:mx-32 text-[#4B5563] text-center">
-              {" "}
-              Step into a world of style with our newest collections, carefully
-              curated to bring you the best in fashion, home decor, and more.
-            </p>
+        </section>
+
+        <section className="section-space">
+          <div className="flex flex-col gap-4 text-center">
+            <Title text1="Curated" text2="for you" />
+            <h2 className="prata-regular text-3xl tracking-[-0.02em] sm:text-4xl">The latest pieces worth making room for.</h2>
+            <p className="mx-auto max-w-2xl text-sm leading-6 text-stone-500">A tighter edit of fashion essentials across men, women and kids — updated with the pieces our shoppers are looking for now.</p>
           </div>
-        </div>
-      </div>
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
-          {products.slice(0, 10).map((product: Products) => {
-            return (
-              <Link
-                to={`/product/${product._id}`}
-                key={product._id}
-                className="flex overflow-hidden flex-col justify-between h-full text-gray-700 cursor-pointer"
-              >
-                <img
-                  className="hover:scale-110 transition ease-in-out"
-                  src={product?.images[0]}
-                  alt={`${product.name}-${product.images}`}
-                />
-                <p className="text-sm pb-1 pt-3">{product.name}</p>
-                <p className="text-sm font-medium">
-                  ${product.price.toFixed(2)}
-                </p>
+          <div className="mt-10">
+            {loading ? <LoadingSpinner /> : latest.length ? <div className="grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-4">{latest.map((product) => <ProductCard key={product._id} product={product} />)}</div> : <p className="py-20 text-center text-stone-500">Products are loading right now. Please refresh in a moment.</p>}
+          </div>
+        </section>
+      </Container>
+
+      <section className="bg-stone-950 text-white">
+        <Container className="section-space">
+          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
+            <div>
+              <p className="eyebrow !text-stone-500">Shop by mood</p>
+              <h2 className="prata-regular mt-3 text-3xl sm:text-4xl">Build a wardrobe that feels like you.</h2>
+            </div>
+            <Link to="/collection" className="text-xs font-bold uppercase tracking-[0.16em] text-stone-300 hover:text-white">View all pieces →</Link>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {["Women", "Men", "Kids", "Winterwear"].map((category) => (
+              <Link key={category} to="/collection" className="group rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 transition hover:-translate-y-1 hover:bg-white/[0.08]">
+                <span className="text-xs uppercase tracking-[0.15em] text-stone-500">Collection</span>
+                <h3 className="prata-regular mt-12 text-2xl text-white">{category}</h3>
+                <p className="mt-2 text-sm text-stone-500">Shop the edit</p>
               </Link>
-            );
-          })}
-        </div>
-      )}
-      <div className="my-10">
-        <div className="py-8 text-center text-3xl">
-          <Title text1="Best" text2="sellers" />
-          <p className="w-3/4 text-gray-600 text-xs sm:text-sm md:text-base mx-auto">
-            Our best sellers are a curated selection of top-rated items that
-            have won over shoppers with their quality, style, and value.
-          </p>
-        </div>
-        {loading ? (
-          <LoadingSpinner />
-        ) : (
-          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-6">
-            {products
-              .filter((product) => product.bestSeller === true)
-              .map((product) => (
-                <Link
-                  to={`/product/${product._id}`}
-                  key={product._id}
-                  className="flex overflow-hidden flex-col justify-between h-full text-gray-700 cursor-pointer"
-                >
-                  <img
-                    className="hover:scale-110 transition ease-in-out"
-                    src={product.images[0]}
-                    alt={`${product.name}-${product.images}`}
-                  />
-                  <p className="text-sm pb-1 pt-3">{product.name}</p>
-                  <p className="text-sm font-medium">
-                    ${product.price.toFixed(2)}
-                  </p>
-                </Link>
-              ))
-              .splice(0, 5)}
+            ))}
           </div>
-        )}
-      </div>
-      <div className="flex flex-col py-8 justify-around gap-12 text-xs text-gray-700 text-center sm:text-sm md:text-base sm:flex-row sm:gap-2 ">
-        <div className="">
-          <img
-            className="m-auto mb-3 w-12"
-            src="/images/return-icon.png"
-            alt="return"
-          />
-          <p className="font-semibold mb-2">Easy Return & Exchange Policy</p>
-          <p className="text-gray-400">
-            Easy Returns/exchanges within 10 days.
-          </p>
-        </div>
-        <div>
-          <img
-            className="m-auto mb-3 w-12"
-            src="/images/quality-icon.png"
-            alt="quality-icon"
-          />
-          <p className="font-semibold mb-2">Our Quality Policy</p>
-          <p>Trendify ensures top-quality products.</p>
-        </div>
-        <div>
-          <img
-            className="m-auto mb-3 w-12"
-            src="/images/earphone.png"
-            alt="earphone"
-          />
-          <p className="font-semibold mb-2">Best Customer Support</p>
-          <p className="text-gray-400">We support via email, phone, or chat.</p>
-        </div>
-      </div>
-      <div className="mt-10 text-center">
-        <p className="text-gray-800 font-medium text-2xl"></p>
-        <p className="mt-3 text-gray-400"></p>
-      </div>
-    </Container>
+        </Container>
+      </section>
+
+      <Container>
+        <section className="section-space">
+          <div className="flex flex-col items-center text-center">
+            <Title text1="Most" text2="loved" />
+            <h2 className="prata-regular text-3xl sm:text-4xl">Bestsellers, without the guesswork.</h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-stone-500">Customer favorites chosen for repeat wear, easy styling and the kind of quality that gets better with time.</p>
+          </div>
+          <div className="mt-10">
+            {loading ? <LoadingSpinner /> : bestSellers.length ? <div className="grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-4">{bestSellers.map((product) => <ProductCard key={product._id} product={product} />)}</div> : <div className="rounded-3xl border border-stone-200 bg-white p-12 text-center text-stone-500">Our bestseller edit is being refreshed.</div>}
+          </div>
+        </section>
+
+        <section className="mb-20 grid gap-4 md:grid-cols-3">
+          {[
+            [exchangeIcon, "Easy returns", "10-day returns and exchanges, kept simple."],
+            [qualityIcon, "Quality first", "Thoughtfully selected products you can rely on."],
+            [supportIcon, "Human support", "Reach us by email, phone or chat when you need us."],
+          ].map(([icon, title, description]) => (
+            <div key={String(title)} className="rounded-[1.5rem] border border-stone-200 bg-white p-7">
+              <img src={String(icon)} alt="" className="h-11 w-11 object-contain" />
+              <h3 className="mt-5 text-base font-semibold">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-stone-500">{description}</p>
+            </div>
+          ))}
+        </section>
+      </Container>
+    </main>
   );
 };
 

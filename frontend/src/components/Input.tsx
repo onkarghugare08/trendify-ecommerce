@@ -1,8 +1,9 @@
 import { cn } from "@sglara/cn";
+
 export type InputSize = "tiny" | "small" | "medium" | "large";
 export type InputType = "checkbox" | "password" | "email" | "number" | "text";
 
-interface Input {
+interface InputProps {
   placeholder?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   htmlType: InputType;
@@ -14,15 +15,9 @@ interface Input {
   required?: boolean;
   inputClassName?: string;
   wrapperClassName?: string;
+  min?: number;
+  max?: number;
 }
-
-const baseStyles = "cursor-pointer";
-const inputSizes = {
-  tiny: "w-3",
-  small: "border border-gray-200 p-1 max-w-10 sm:max-w-20 sm:px-2",
-  medium: "border-[0.063rem] px-3 py-2 border-gray-800 w-full",
-  large: "w-full font-bold border border-gray-300 outline-0 rounded",
-};
 
 const Input = ({
   placeholder,
@@ -36,9 +31,18 @@ const Input = ({
   label,
   value,
   required,
-}: Input) => {
+  min,
+  max,
+}: InputProps) => {
+  const sizes = {
+    tiny: "h-4 w-4 accent-stone-950",
+    small: "rounded-xl border border-stone-300 px-2 py-1.5 text-sm",
+    medium: "rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm outline-none focus:border-stone-900",
+    large: "rounded-2xl border border-stone-300 bg-white px-4 py-3.5 text-sm outline-none focus:border-stone-900",
+  };
+
   return (
-    <label className={cn("gap-2 flex cursor-pointer w-full", wrapperClassName)}>
+    <label className={cn("flex cursor-text items-center gap-2", htmlType === "checkbox" && "cursor-pointer", wrapperClassName)}>
       <input
         placeholder={placeholder}
         checked={checked}
@@ -47,13 +51,11 @@ const Input = ({
         name={name}
         value={value}
         required={required}
-        className={cn(
-          htmlType === "checkbox" ? "w-3" : inputSizes[size],
-          inputClassName,
-          baseStyles
-        )}
+        min={min}
+        max={max}
+        className={cn(sizes[size], inputClassName)}
       />
-      {label && <span>{label}</span>}
+      {label && <span className="text-sm text-stone-600">{label}</span>}
     </label>
   );
 };
