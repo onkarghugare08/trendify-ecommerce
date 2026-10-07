@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: ecommerce-backend
-        image: onkar1817/mern-ecommerce-backend:latest
+        image: onkar1817/trendify-ecommerce-backend:latest        
         ports:
         - containerPort: 5000
         env:
