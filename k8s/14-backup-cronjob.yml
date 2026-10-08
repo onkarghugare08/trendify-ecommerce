@@ -1,0 +1,71 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup-cronjob
+  namespace: trendify
+spec:
+  schedule: "0 2 * * *"  # Runs every day at 2:00 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mongodump
+            image: mongo:7
+            command:
+            - /bin/sh
+            - -c
+            - |
+              BACKUP_DIR="/data/db/backups/$(date +%F_%H-%M-%S)"
+              echo "Starting MongoDB backup to ${BACKUP_DIR}..."
+              
+              mongodump --host=mongodb:27017 \
+                        --username="${MONGO_INITDB_ROOT_USERNAME}" \
+                        --password="${MONGO_INITDB_ROOT_PASSWORD}" \
+                        --authenticationDatabase=admin \
+                        --db="${MONGO_INITDB_DATABASE}" \
+                        --out="${BACKUP_DIR}"
+              
+              if [ $? -eq 0 ]; then
+                echo "Backup completed successfully."
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+            env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: ecommerce-configmap
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: ecommerce-configmap
+                  key: MONGO_INITDB_DATABASE
+            
+            # ⬇️ ADDED RESOURCE MANAGEMENT CONSTRAINTS HERE ⬇️
+            resources:
+              requests:
+                cpu: "250m"       # Baseline CPU request
+                memory: "256Mi"   # Baseline RAM allocation
+              limits:
+                cpu: "500m"       # Max CPU compression allowance
+                memory: "512Mi"   # Max safe headroom limit
+            
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /data/db
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: mongodata-mongodb-0

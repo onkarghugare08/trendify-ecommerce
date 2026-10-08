@@ -2,10 +2,9 @@ kind: Service
 apiVersion: v1
 metadata:
   name: mongodb
-  namespace: mernstack
+  namespace: trendify
 
 spec:
-  clusterIP: None
   selector:
     app: ecommerce-mongodb
 

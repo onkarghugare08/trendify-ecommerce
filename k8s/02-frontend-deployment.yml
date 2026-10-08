@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ecommerce-frontend-deployment
-  namespace: mernstack
+  namespace: trendify
   labels:
     app: ecommerce-frontend
 spec:
@@ -18,14 +18,24 @@ spec:
       containers:
       - name: ecommerce-frontend
         image: onkar1817/trendify-ecommerce-frontend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
 
         resources:
           requests: # minimum resource requirement
-            cpu: 10m # 0.01 Cores of CPU
-            memory: 64Mi # 67 Mb of RAM
+            cpu: 100m
+            memory: 128Mi
 
           limits: # maximum resource requirement
-            cpu: 250m # 0.25 Cores of CPU
-            memory: 128Mi
+            cpu: 250m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80

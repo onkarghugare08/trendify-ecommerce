@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: frontend
-  namespace: mernstack
+  namespace: trendify
 
 spec:
   selector:
@@ -12,5 +12,3 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80 # container port
-      nodePort: 30001
-  type: NodePort

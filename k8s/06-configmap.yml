@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ecommerce-configmap
-  namespace: mernstack
+  namespace: trendify
 data:
   MONGO_INITDB_ROOT_USERNAME: merndb 
   MONGO_INITDB_DATABASE: mernapp

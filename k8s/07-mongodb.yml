@@ -2,7 +2,7 @@ kind: StatefulSet
 apiVersion: apps/v1
 metadata:
   name: mongodb
-  namespace: mernstack
+  namespace: trendify
   labels:
     app: ecommerce-mongodb
 
@@ -24,6 +24,13 @@ spec:
         ports:
         - containerPort: 27017
           name: mongodb
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
         volumeMounts:
         - name: mongodata
           mountPath: /data/db
@@ -46,13 +53,18 @@ spec:
               configMapKeyRef:
                 name: ecommerce-configmap
                 key: MONGO_INITDB_DATABASE
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - mongosh --quiet --eval "db.adminCommand('ping')"
         readinessProbe:
          exec:
             command:
               - /bin/sh
               - -c
               - mongosh --quiet --eval "db.adminCommand('ping')"
-          
   volumeClaimTemplates:
   - metadata:
       name: mongodata
