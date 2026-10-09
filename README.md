@@ -1,589 +1,334 @@
 # 🛍️ Trendify E-Commerce
 
-A full-stack e-commerce application built with the **MERN stack**, containerized with **Docker**, and supported by **Kubernetes manifests for deployment testing**.
+A full-stack **MERN e-commerce application** that has evolved from an application-development project into a hands-on **DevOps and Kubernetes assignment**. The repository includes Docker and Docker Compose configuration alongside Kubernetes manifests used to deploy and test the application.
 
-Trendify separates the frontend, backend API, and MongoDB database into independent components so the application can be developed locally, run with Docker Compose, and tested in a Kubernetes environment.
+**Repository:** https://github.com/onkarghugare08/trendify-ecommerce
 
-**GitHub Repository:** https://github.com/onkarghugare08/trendify-ecommerce
+> **Project status:** The MERN application, Docker setup, and Kubernetes test deployment are documented here. GitHub Actions automation for creating a Kind cluster is still incomplete and is called out below rather than being presented as working.
 
 ---
 
 ## 📌 Project Overview
 
-Trendify is a practical e-commerce project built to combine **application development with DevOps practices**.
+Trendify separates the user interface, API, and database into components that can be developed and run together. The project is also used to practise containerization, workload orchestration, persistent storage, service discovery, resource management, access control, and scheduled operations in Kubernetes.
 
-The application consists of:
+### Main components
 
-- **React.js** frontend for the user interface
-- **Node.js + Express.js** backend for REST APIs
-- **MongoDB** for persistent application data
-- **Docker** for containerization
-- **Docker Compose** for multi-container local deployment
-- **Kubernetes (`k8s/`)** for container orchestration and deployment testing
+- **Frontend:** React.js application
+- **Backend:** Node.js and Express.js REST API
+- **Database:** MongoDB, accessed by the backend through Mongoose
+- **Containerization:** Docker
+- **Local multi-container setup:** Docker Compose
+- **Orchestration and deployment practice:** Kubernetes manifests in `k8s/`
 
-The project demonstrates how the same application can move from a traditional local development environment to a containerized and Kubernetes-based setup.
+## ✨ Highlights
 
----
-
-## ✨ Features
-
-- 🛍️ Product browsing and e-commerce workflow
-- 👤 User-related functionality and authentication APIs
-- 🌐 REST API based frontend/backend communication
-- 🗄️ MongoDB database integration
-- 🔐 Environment-based configuration
-- 🐳 Dockerized application services
-- 🔗 Docker Compose orchestration
-- 💾 Persistent MongoDB storage
-- ☸️ Kubernetes deployment/testing manifests
-- 📦 Modular frontend and backend structure
-
-> Keep the feature list synchronized with the actual application modules as the project evolves.
+- MERN application organized into frontend and backend components
+- REST API communication between the frontend and backend
+- MongoDB integration and persistent database storage
+- Dockerfiles and Docker Compose configuration
+- Kubernetes Deployments, Services, and namespace isolation
+- ConfigMaps and Secrets for configuration
+- Container CPU and memory requests and limits
+- Readiness and liveness probes
+- PersistentVolume and PersistentVolumeClaim for MongoDB data
+- Ingress configuration for HTTP routing
+- Horizontal Pod Autoscaler (HPA)
+- Role-Based Access Control (RBAC) and a dedicated ServiceAccount
+- MongoDB backup CronJob manifest
+- Rolling-update and rollback practice
 
 ---
 
 ## 🧰 Technology Stack
 
-| Layer | Technology |
+| Area | Technology |
 |---|---|
 | Frontend | React.js |
-| Backend | Node.js |
-| API Framework | Express.js |
+| Backend runtime | Node.js |
+| API framework | Express.js |
 | Database | MongoDB |
 | ODM | Mongoose |
-| Authentication | Project-configured authentication/JWT |
 | Containerization | Docker |
-| Local Orchestration | Docker Compose |
-| Container Orchestration | Kubernetes |
-| Version Control | Git & GitHub |
+| Local orchestration | Docker Compose |
+| Container orchestration | Kubernetes |
+| Local Kubernetes cluster used for the assignment | Kind |
+| Version control | Git and GitHub |
 
 ---
 
-# 🏗️ Application Architecture
+## 🏗️ Application Architecture
 
-The core Trendify application follows a three-tier architecture.
+The application follows a three-tier structure: presentation, API/business logic, and data storage.
 
 ```mermaid
 flowchart LR
-    U[👤 User / Browser]
-
-    subgraph APP["Trendify E-Commerce"]
-        FE["🖥️ Frontend<br/>React.js"]
-        BE["⚙️ Backend API<br/>Node.js + Express.js"]
-        DB[("🍃 MongoDB<br/>Database")]
-    end
-
-    U -->|HTTP / HTTPS| FE
-    FE -->|REST API / JSON| BE
-    BE -->|Mongoose| DB
+    U[User / Browser] --> FE[React Frontend]
+    FE -->|HTTP / REST API| BE[Node.js + Express API]
+    BE -->|Mongoose connection| DB[(MongoDB)]
 ```
 
-### 🔄 Request Flow
+### Request flow
 
-1. The user interacts with the React frontend.
-2. The frontend sends HTTP requests to the Express backend.
-3. The backend processes the request and applies application logic.
-4. Mongoose is used to communicate with MongoDB.
-5. MongoDB returns the requested data or operation result.
-6. The backend returns a JSON response to the frontend.
-7. The frontend updates the user interface.
+1. A user opens and interacts with the React frontend.
+2. The frontend sends requests to the backend API.
+3. Express handles the request and runs the relevant application logic.
+4. The backend reads or writes data in MongoDB through Mongoose.
+5. The API returns a response to the frontend, which updates the interface.
 
 ---
 
-# 🐳 Docker Architecture
+## 🐳 Docker and Docker Compose
 
-Docker packages the application components into isolated services.
+Docker packages the application components into containers. Docker Compose coordinates the frontend, backend, and database for local multi-container development.
 
 ```mermaid
 flowchart TB
-    U[👤 User]
-
-    subgraph DC["Docker Compose"]
-        F["Frontend Container<br/>React"]
-        B["Backend Container<br/>Node.js + Express"]
-        M[("MongoDB Container")]
-        V[("MongoDB Named Volume")]
+    U[User / Browser]
+    subgraph DC[Docker Compose]
+        FE[Frontend Container]
+        BE[Backend Container]
+        DB[(MongoDB Container)]
+        VOL[(MongoDB Data Volume)]
     end
-
-    U -->|Web Browser| F
-    F -->|REST API| B
-    B -->|MongoDB connection| M
-    M --> V
+    U --> FE
+    FE -->|REST API| BE
+    BE --> DB
+    DB --> VOL
 ```
 
-### Docker benefits in this project
+### Start with Docker Compose
 
-- Consistent development environment
-- Isolated services
-- Easier application startup
-- Simple service-to-service networking
-- Persistent database storage
-- Easier deployment to cloud servers
-- Foundation for CI/CD and Kubernetes
-
----
-
-# ☸️ Kubernetes Architecture
-
-The repository contains a **`k8s/` directory that is used for Kubernetes testing and deployment**.
-
-Kubernetes provides orchestration for the application components and allows the containerized application to be deployed as workloads and exposed through Services.
-
-```mermaid
-flowchart TB
-    USER[👤 User]
-
-    subgraph K8S["☸️ Kubernetes Cluster"]
-        FS["Frontend Service"]
-        FP["Frontend Pod<br/>React"]
-
-        BS["Backend Service"]
-        BP["Backend Pod<br/>Node.js + Express"]
-
-        DS["MongoDB Service"]
-        DP["MongoDB Workload / Pod"]
-
-        USER --> FS
-        FS --> FP
-        FP --> BS
-        BS --> BP
-        BP --> DS
-        DS --> DP
-    end
-```
-
-### Kubernetes flow
-
-```text
-User
-  ↓
-Frontend Service
-  ↓
-Frontend Pod
-  ↓
-Backend Service
-  ↓
-Backend Pod
-  ↓
-MongoDB Service
-  ↓
-MongoDB Workload
-```
-
-### Why Kubernetes is included
-
-Kubernetes is not just a future idea for this repository. The **`k8s/` folder contains the manifests you are testing**, so the project demonstrates both:
-
-- **Docker Compose** for local multi-container deployment
-- **Kubernetes** for container orchestration and deployment testing
-
----
-
-# 🔁 End-to-End Request Flow
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant UI as React Frontend
-    participant API as Express Backend
-    participant DB as MongoDB
-
-    User->>UI: Open Trendify
-    UI->>API: Send REST API request
-    API->>DB: Query / update data
-    DB-->>API: Return database result
-    API-->>UI: JSON response
-    UI-->>User: Render updated UI
-```
-
----
-
-# 🔐 Authentication Flow
-
-```mermaid
-flowchart LR
-    U[👤 User]
-    UI[🔐 Login / Signup UI]
-    API[⚙️ Express Authentication API]
-    DB[("🍃 MongoDB")]
-
-    U --> UI
-    UI -->|Credentials| API
-    API -->|User lookup / create| DB
-    DB --> API
-    API -->|Authentication response / token| UI
-    UI --> U
-```
-
-Sensitive values such as database credentials and authentication secrets should be stored in environment variables and should never be committed to GitHub.
-
----
-
-# 📂 Project Structure
-
-```text
-trendify-ecommerce/
-│
-├── frontend/                  # React frontend
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── Dockerfile
-│
-├── backend/                   # Node.js + Express backend
-│   ├── Model/
-│   ├── Routes/
-│   ├── middleware/            # If used by the project
-│   ├── controllers/           # If used by the project
-│   ├── package.json
-│   └── Dockerfile
-│
-├── k8s/                       # Kubernetes manifests
-│   └── *.yaml
-│
-├── docker-compose.yml         # Multi-container deployment
-├── .env.example               # Example environment configuration
-└── README.md
-```
-
-> The exact YAML filenames under `k8s/` should remain synchronized with the repository.
-
----
-
-# ⚙️ Environment Variables
-
-Use environment variables for values that change between environments.
-
-### Backend example
-
-```env
-PORT=5000
-MONGO_URI=mongodb://mongodb:27017/trendify
-JWT_SECRET=your_secure_secret
-```
-
-When the backend runs inside Docker Compose, MongoDB should normally be referenced using the **MongoDB Compose service name** rather than `localhost`.
-
-Example:
-
-```env
-MONGO_URI=mongodb://mongodb:27017/trendify
-```
-
----
-
-# 🚀 Run Locally Without Docker
-
-## 1. Clone the repository
-
-```bash
-git clone https://github.com/onkarghugare08/trendify-ecommerce.git
-cd trendify-ecommerce
-```
-
-## 2. Install backend dependencies
-
-```bash
-cd backend
-npm install
-```
-
-## 3. Install frontend dependencies
-
-Open another terminal:
-
-```bash
-cd frontend
-npm install
-```
-
-## 4. Configure environment variables
-
-Create the required `.env` files using the variables expected by the application.
-
-## 5. Start the backend
-
-```bash
-npm run dev
-```
-
-## 6. Start the frontend
-
-```bash
-npm run dev
-```
-
-Open the frontend URL shown by the development server.
-
----
-
-# 🐳 Run With Docker Compose
-
-From the project root:
+Run these commands from the repository root:
 
 ```bash
 docker compose up --build
 ```
 
-Run in detached mode:
+Run in the background:
 
 ```bash
 docker compose up -d --build
 ```
 
-Check running services:
+Inspect containers and logs:
 
 ```bash
 docker compose ps
-```
-
-View logs:
-
-```bash
 docker compose logs -f
 ```
 
-Stop the application:
+Stop the stack:
 
 ```bash
 docker compose down
 ```
 
-Remove containers and the persistent database volume:
-
-```bash
-docker compose down -v
-```
-
-> Use `docker compose down -v` only when you intentionally want to delete the MongoDB data stored in the Compose volume.
+> `docker compose down -v` also removes Compose-managed volumes. Use it only when you intentionally want to delete the database data stored in those volumes.
 
 ---
 
-# ☸️ Run the Kubernetes Test Deployment
+## ☸️ Kubernetes Assignment
 
-Make sure a Kubernetes cluster is available, such as **Minikube, Kind, Docker Desktop Kubernetes, or another development cluster**.
+The `k8s/` directory contains the Kubernetes resources used to practise deploying Trendify and operating it inside a cluster. The cluster used for the reported audit had three Kind nodes named `audit-control-plane`, `audit-worker`, and `audit-worker2`.
 
-Check cluster access:
+### Kubernetes architecture
+
+```mermaid
+flowchart TB
+    USER[User / Browser]
+    ING[Ingress Controller / Ingress Rule]
+    FS[Frontend Service :80]
+    FE[Frontend Pod]
+    BS[Backend Service :5000]
+    BE[Backend Pods]
+    MS[MongoDB Service :27017]
+    DB[(MongoDB StatefulSet / Pod)]
+    PVC[PersistentVolumeClaim]
+    PV[(PersistentVolume)]
+
+    USER --> ING --> FS --> FE
+    FE --> BS --> BE
+    BE --> MS --> DB
+    DB --> PVC --> PV
+```
+
+### Kubernetes manifests
+
+| File | Purpose |
+|---|---|
+| `k8s/01-namespace.yml` | Creates the `trendify` namespace |
+| `k8s/02-frontend-deployment.yml` | Frontend Deployment |
+| `k8s/03-frontend-service.yml` | Frontend Service |
+| `k8s/04-backend-deployment.yml` | Backend Deployment |
+| `k8s/05-secrets.yml` | Kubernetes Secret for sensitive configuration |
+| `k8s/06-configmap.yml` | Non-sensitive application configuration |
+| `k8s/07-mongodb.yml` | MongoDB StatefulSet/workload |
+| `k8s/08-mongodb-service.yml` | MongoDB Service |
+| `k8s/09-mongo_pv.yml` | Persistent storage resource for MongoDB |
+| `k8s/10-backend-service.yml` | Backend Service |
+| `k8s/11-hpa.yml` | Horizontal Pod Autoscaler |
+| `k8s/12-ingress.yml` | Ingress routing configuration |
+| `k8s/13-rbac.yml` | ServiceAccount, Role, and RoleBinding resources |
+| `k8s/14-backup-cronjob.yml` | Scheduled MongoDB backup job definition |
+
+### Deploy to a Kubernetes cluster
+
+**Prerequisites:** Docker, `kubectl`, access to a working Kubernetes cluster, and the application images referenced by the manifests available to that cluster. If using Kind, build/load your images into the correct cluster; if using a remote cluster, publish images to a registry the cluster can access.
+
+Check cluster access and nodes:
 
 ```bash
 kubectl cluster-info
-```
-
-Check nodes:
-
-```bash
 kubectl get nodes
 ```
 
-## Apply the Kubernetes manifests
+Apply the manifests from the project root:
 
 ```bash
 kubectl apply -f k8s/
 ```
 
-## Check deployments
+Inspect the Trendify resources:
 
 ```bash
-kubectl get deployments
+kubectl get all -n trendify
+kubectl get ingress,pvc,hpa,cronjob -n trendify
+kubectl get pv
 ```
 
-## Check pods
+Inspect pod logs and events:
 
 ```bash
-kubectl get pods
+kubectl logs -n trendify <pod-name>
+kubectl describe pod -n trendify <pod-name>
+kubectl get events -n trendify --sort-by=.metadata.creationTimestamp
 ```
 
-## Check services
-
-```bash
-kubectl get services
-```
-
-## View pod logs
-
-```bash
-kubectl logs <pod-name>
-```
-
-## Inspect a resource
-
-```bash
-kubectl describe pod <pod-name>
-```
-
-## Delete the Kubernetes test deployment
+Delete the resources declared in the manifests when you intentionally want to remove the test deployment:
 
 ```bash
 kubectl delete -f k8s/
 ```
 
----
-
-# 🔌 Service Communication
-
-## Docker Compose
-
-```mermaid
-flowchart LR
-    FE["Frontend Container"]
-    BE["Backend Container :5000"]
-    DB["MongoDB Container"]
-
-    FE -->|HTTP / REST API| BE
-    BE -->|MongoDB connection| DB
-```
-
-## Kubernetes
-
-```mermaid
-flowchart LR
-    FS["Frontend Service"]
-    FP["Frontend Pods"]
-    BS["Backend Service"]
-    BP["Backend Pods"]
-    MS["MongoDB Service"]
-    MP["MongoDB Pod"]
-
-    FS --> FP
-    FP --> BS
-    BS --> BP
-    BP --> MS
-    MS --> MP
-```
-
-The important Kubernetes concept is that application components communicate through **Services** rather than relying on individual Pod IP addresses.
+> **Ingress / EC2 access note:** The audit output showed the Ingress host as `trendify.localtest.me` and its address as `localhost`. This is not proof that the application is publicly reachable through the EC2 public IP. To access it remotely, configure the Ingress controller, Kind port mappings or the cluster networking, the EC2 security group, and a hostname that resolves to the intended endpoint. Verify the URL from another machine before documenting it as a public demo.
 
 ---
 
-# 🩺 Health & Reliability
+## ✅ Kubernetes Audit Results
 
-Health checks help determine whether an application is ready to serve traffic.
+The last reported run of `./audit.sh trendify` returned **15/16 checks**: all **12/12 must-have checks** and **3/4 stretch checks** passed. This is the result from that audit run, not a guarantee that every new cluster or machine will produce the same state.
 
-A typical Kubernetes flow is:
+| Audit area | Result | Evidence / note |
+|---|---|---|
+| Deployment and ReplicaSet | ✅ | Audit detected application Deployments and ReplicaSets |
+| Services, namespace, labels, and selectors | ✅ | Audit found three Services with matching Pod endpoints |
+| Rolling update / rollback practice | ✅ | Audit detected a Deployment rolled to a new image; keep rollout-history and rollback command output as submission evidence |
+| ConfigMap and Secret | ✅ | Audit detected one non-default ConfigMap and one Opaque Secret |
+| Resource requests and limits | ✅ | Audit reported CPU and memory requests/limits on all 4 containers |
+| Liveness and readiness probes | ✅ | Audit reported both probes on all 4 containers |
+| PersistentVolumeClaim | ✅ | Audit reported one bound PVC |
+| Ingress | ✅ | Audit detected one Ingress and one running controller Pod; external EC2 reachability still needs a separate test |
+| Multi-node cluster | ✅ | Audit detected three nodes |
+| HPA | ✅ | Audit detected one HPA |
+| RBAC and ServiceAccount | ✅ | Audit detected Role/RoleBinding resources and a custom ServiceAccount |
+| MongoDB backup CronJob | ✅ | Audit detected one CronJob |
+| GitHub Actions to Kind | ❌ | Workflow is not currently passing the audit's check for Kind cluster creation; this remains work in progress |
 
-```mermaid
-flowchart LR
-    P["Application Pod"]
-    HC["Readiness / Liveness Check"]
-    K["Kubernetes"]
+### Snapshot of resources from the reported run
 
-    P --> HC
-    HC -->|healthy / unhealthy| K
+The output shared for the `trendify` namespace showed:
+
+- Frontend Deployment: 1 replica running
+- Backend Deployment: 2 replicas running
+- MongoDB StatefulSet: 1 Pod running
+- Services: `frontend` on port 80, `backend` on port 5000, and `mongodb` on port 27017
+- MongoDB PVC: `mongodata-mongodb-0`, reported `Bound`, with 1 GiB requested
+- HPA: target range of 1–5 frontend replicas; the reported snapshot showed CPU and memory utilization below the configured targets
+- Backup CronJob: schedule `0 2 * * *` (02:00 according to the cluster's scheduling timezone/configuration)
+- Ingress host: `trendify.localtest.me`; reported address `localhost`
+
+These are a snapshot of the environment at audit time. Check the live cluster to confirm current status.
+
+### RBAC verification
+
+The reported authorization test returned `yes` for listing Pods and `no` for deleting Pods as the `trendify-viewer` ServiceAccount. This illustrates the intended least-privilege behavior for that test:
+
+```bash
+kubectl auth can-i list pods -n trendify \
+  --as=system:serviceaccount:trendify:trendify-viewer
+
+kubectl auth can-i delete pods -n trendify \
+  --as=system:serviceaccount:trendify:trendify-viewer
 ```
 
-> Document the exact health endpoint from the backend implementation here when it is finalized.
+### GitHub Actions status
+
+GitHub Actions automation that creates a Kind cluster and deploys/tests the project is **not yet passing the audit**. The audit reported that it could not find the expected Kind-cluster workflow setup under `.github/workflows`. Do not treat the pipeline as complete until the workflow exists, runs successfully, and its run is saved as evidence.
 
 ---
 
-# 🔒 Security Practices
+## 🔐 Configuration and Security Notes
 
-- Never commit `.env` files containing secrets.
-- Use strong authentication secrets.
-- Validate API input.
-- Restrict CORS origins in production.
-- Use HTTPS in production.
+- Keep `.env` files and real credentials out of Git. Commit an example file with placeholder values instead.
+- Use Kubernetes Secrets for sensitive values, but remember that Secrets are not a substitute for appropriate cluster access control or encryption configuration.
+- Use ConfigMaps for non-sensitive settings.
+- Do not expose MongoDB directly to the public internet.
+- Restrict CORS to the required origins in production.
+- Use HTTPS/TLS for a public deployment.
 - Keep dependencies and base images updated.
-- Avoid exposing MongoDB directly to the public internet.
-- Use least-privilege credentials for production deployments.
-- Scan container images for known vulnerabilities before production deployment.
+- Use least-privilege ServiceAccounts and RBAC permissions.
+- Add dependency and container-image scanning to CI before production deployment.
+
+### Environment variables
+
+The exact variables depend on the application and manifests. A typical backend configuration may resemble the following; use the variable names expected by the code and never replace production credentials with these placeholders:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://mongodb:27017/trendify
+JWT_SECRET=replace_with_a_secure_secret
+```
+
+When running in Docker Compose or Kubernetes, the database hostname should normally be the database service name rather than `localhost`.
 
 ---
 
-# 🔄 DevOps / CI-CD Roadmap
-
-The project already demonstrates **containerization and Kubernetes testing**. A natural next stage is automated CI/CD.
+## 🔄 DevOps Project Evolution
 
 ```mermaid
 flowchart LR
-    G["GitHub Repository"]
-    CI["CI<br/>Build + Test"]
-    SEC["Security Scan<br/>Dependencies + Container"]
-    IMG["Docker Image Build"]
-    REG["Container Registry"]
-    K["Kubernetes Deployment"]
-    MON["Monitoring"]
-
-    G --> CI
-    CI --> SEC
-    SEC --> IMG
-    IMG --> REG
-    REG --> K
-    K --> MON
+    A[MERN Application] --> B[Docker Images]
+    B --> C[Docker Compose]
+    C --> D[Kubernetes Deployment Practice]
+    D --> E[GitHub Actions CI/CD - in progress]
+    E --> F[Hardened Cloud Deployment - future improvement]
 ```
 
-Possible improvements include:
+The project journey is **Application Development → Containerization → Orchestration → Automation → Cloud Operations**. The CI/CD stage is in progress; it is not being represented as complete yet.
 
-- GitHub Actions CI/CD
-- Docker image publishing
-- Trivy container scanning
-- Automated Kubernetes deployment
-- AWS deployment
-- Nginx reverse proxy
-- HTTPS/TLS
-- Monitoring and centralized logging
+## 🎯 Key Learning Outcomes
 
----
+This project has provided practice with:
 
-# 📈 Project Evolution
-
-```mermaid
-flowchart LR
-    A["MERN Application"]
-    B["Docker"]
-    C["Docker Compose"]
-    D["Kubernetes Testing"]
-    E["CI/CD"]
-    F["Cloud Deployment"]
-
-    A --> B
-    B --> C
-    C --> D
-    D --> E
-    E --> F
-```
-
-This progression reflects the DevOps journey of the project:
-
-**Application Development → Containerization → Orchestration → Automation → Cloud Deployment**
+- MERN application architecture and REST API communication
+- Dockerfiles, image builds, container networking, and Docker Compose
+- Kubernetes Namespaces, Deployments, ReplicaSets, and Services
+- ConfigMaps, Secrets, and environment-specific configuration
+- Resource requests/limits and liveness/readiness probes
+- MongoDB persistence using PV/PVC resources
+- Ingress routing and cluster networking considerations
+- HPA, RBAC, ServiceAccounts, and scheduled CronJobs
+- Rolling updates, rollback workflow, and evidence-based auditing
+- Identifying unfinished CI/CD automation and reporting its current status accurately
 
 ---
 
-# 💡 Key Learning Outcomes
-
-Through this project, the following skills are demonstrated:
-
-- Full-stack MERN development
-- REST API integration
-- MongoDB and Mongoose
-- Environment-based configuration
-- Dockerfile creation
-- Docker container networking
-- Docker Compose
-- Persistent database storage
-- Kubernetes manifests
-- Kubernetes Deployments and Services
-- Container orchestration concepts
-- Git and GitHub workflow
-- DevOps-oriented application architecture
-
----
-
-# 🧑‍💻 Author
+## 👨‍💻 Author
 
 **Onkar Ghugare**
 
-GitHub: [@onkarghugare08](https://github.com/onkarghugare08)
-
-Project: [Trendify E-Commerce](https://github.com/onkarghugare08/trendify-ecommerce)
-
----
-
-# ⭐ Support
-
-If you find this project useful, please consider giving the repository a ⭐ on GitHub.
+- GitHub: [@onkarghugare08](https://github.com/onkarghugare08)
+- Project repository: [Trendify E-Commerce](https://github.com/onkarghugare08/trendify-ecommerce)
 
 ---
-
-# 📄 License
-
-Add the project's actual license here once a `LICENSE` file is committed.
