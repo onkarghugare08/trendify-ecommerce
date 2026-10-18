@@ -21,8 +21,8 @@ services:
       start_period: 10s
 
   backend:
-    build: ./backend
-    image: onkar1817/trendify-ecommerce-backend:latest 
+    build:
+      context: ./backend
     container_name: mern-backend
     restart: unless-stopped
     env_file:
@@ -49,8 +49,8 @@ services:
       start_period: 20s
 
   frontend:
-    build: ./frontend
-    image: onkar1817/trendify-ecommerce-frontend:latest
+    build:
+      context: ./frontend
     container_name: mern-frontend
     restart: unless-stopped
     ports:
